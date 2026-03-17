@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Voice Notes</h2>
+
+<button onclick="startRecording()">Start</button>
+<button onclick="stopRecording()">Stop</button>
+
+<p><b>Transcript:</b></p>
+<p id="output"></p>
+
+<p><b>Wallet Usage:</b></p>
+<pre id="balance"></pre>
+
+<script>
+let mediaRecorder;
+let audioChunks = [];
+
+// 🎤 Start Recording
+async function startRecording() {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  mediaRecorder = new MediaRecorder(stream);
+
+  mediaRecorder.ondataavailable = event => {
+    audioChunks.push(event.data);
+  };
+
+  mediaRecorder.start();
+}
+
+// 🎤 Stop Recording
+function stopRecording() {
+  mediaRecorder.stop();
+
+  mediaRecorder.onstop = async () => {
+    const blob = new Blob(audioChunks, { type: "audio/webm" });
+    audioChunks = [];
+
+    const formData = new FormData();
+    formData.append("audio", blob);
+
+    const res = await fetch("http://localhost:5000/transcribe", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    document.getElementById("output").innerText = data.text || "No speech detected";
+  };
+}
+
+// 💰 Get Wallet Usage
+async function getBalance() {
+  try {
+    const res = await fetch("http://localhost:5000/balance");
+    const data = await res.json();
+
+    document.getElementById("balance").innerText =
+      "Project: " + (data.project_name || "N/A") + "\n" +
+      "Project ID: " + (data.project_id || "N/A") + "\n" +
+      "Status: " + (data.status || "N/A");
+
+  } catch (err) {
+    document.getElementById("balance").innerText = "Error fetching wallet";
+  }
+}
+// Call on load
+getBalance();
+</script>
+
+</body>
+</html>
