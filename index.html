@@ -40,7 +40,7 @@ function stopRecording() {
     const formData = new FormData();
     formData.append("audio", blob);
 
-    const res = await fetch("http://localhost:5000/transcribe", {
+    const res = await fetch("https://voice-backend-054k.onrender.com/transcribe", {
       method: "POST",
       body: formData
     });
@@ -50,10 +50,10 @@ function stopRecording() {
   };
 }
 
-// 💰 Get Wallet Usage
+// 💰 Wallet Info
 async function getBalance() {
   try {
-    const res = await fetch("http://localhost:5000/balance");
+    const res = await fetch("https://voice-backend-054k.onrender.com/balance");
     const data = await res.json();
 
     document.getElementById("balance").innerText =
@@ -65,7 +65,8 @@ async function getBalance() {
     document.getElementById("balance").innerText = "Error fetching wallet";
   }
 }
-// Call on load
+
+// Load wallet on start
 getBalance();
 </script>
 
